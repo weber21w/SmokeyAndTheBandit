@@ -10,6 +10,7 @@ TARGET = $(GAME).elf
 CC = avr-gcc
 PACKROM = packrom
 INFO=../gameinfo.properties
+UZEBIN_DIR = ../../../bin
 
 ## Kernel settings
 KERNEL_DIR = ../kernel
@@ -79,8 +80,30 @@ LINKONLYOBJECTS =
 ## Include Directories
 INCLUDES = -I"$(KERNEL_DIR)" 
 
+## Resources
+RESOURCES = ../data/sprites.inc ../data/font1.inc ../data/font2.inc ../data/font3.inc ../data/font4.inc
+
 ## Build
-all: $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze size
+all: $(RESOURCES) $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze size
+
+## Rebuild graphics resources
+../data/sprites.inc: ../data/images/sprites.png ../data/sprites.xml
+	$(UZEBIN_DIR)/gconvert ../data/sprites.xml
+
+## 2-1 mismatch is intentional
+../data/font1.inc: ../data/images/fonts2.png ../data/font1.xml
+	$(UZEBIN_DIR)/gconvert ../data/font1.xml
+
+../data/font2.inc: ../data/images/fonts2.png ../data/font2.xml
+	$(UZEBIN_DIR)/gconvert ../data/font2.xml
+
+## 2-3 mismatch is intentional
+../data/font3.inc: ../data/images/fonts2.png ../data/font3.xml
+	$(UZEBIN_DIR)/gconvert ../data/font3.xml
+
+## 2-4 mismatch is intentional
+../data/font4.inc: ../data/images/fonts2.png ../data/font4.xml
+	$(UZEBIN_DIR)/gconvert ../data/font4.xml
 
 ## Compile Kernel files
 uzeboxVideoEngineCore.o: $(KERNEL_DIR)/uzeboxVideoEngineCore.s
@@ -116,7 +139,7 @@ $(TARGET): $(OBJECTS)
 	avr-objdump -h -S $< > $@
 
 %.uze: $(TARGET)
-	$(PACKROM) $(GAME).hex $@ $(INFO)
+	-$(UZEBIN_DIR)/packrom $(GAME).hex $@ $(INFO)
 
 
 UNAME := $(shell sh -c 'uname -s 2>/dev/null || echo not')
@@ -137,4 +160,3 @@ clean:
 
 ## Other dependencies
 -include $(shell mkdir dep 2>/dev/null) $(wildcard dep/*)
-
